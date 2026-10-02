@@ -104,7 +104,10 @@ final class BluetoothController: NSObject, ObservableObject {
         active = peripheral
         transferID = UUID()
         peripheral.delegate = self
+        let previousIdleTimerSetting = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = true
         defer {
+            UIApplication.shared.isIdleTimerDisabled = previousIdleTimerSetting
             deadline?.cancel()
             configuration = nil
             characteristic = nil

@@ -12,7 +12,7 @@ The iPhone app lives separately because it has its own Xcode project, Bluetooth 
 - Edit account sources, source credentials, panel dimensions, rotation, refresh interval and widget positions. Edit per-device display overrides separately.
 - Sign in with the existing Clerk account through Clerk's native authentication components; manage your account and sign out.
 
-There is no demo backend or invented live data. Failed network requests and unconfirmed display updates remain visible errors. Bluetooth transfers stop on cancellation, sign-out, or backgrounding. Automatic Wi-Fi updates run on the display itself.
+There is no demo backend or invented live data. Failed network requests and unconfirmed display updates remain visible errors. Bluetooth transfers keep the screen awake until completion, and stop on cancellation, sign-out, or backgrounding. Automatic Wi-Fi updates run on the display itself.
 
 ## Open and run
 
