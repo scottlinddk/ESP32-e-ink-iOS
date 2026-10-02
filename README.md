@@ -36,9 +36,11 @@ xcodebuild test -project EInk.xcodeproj -scheme EInk \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
-Choose an installed simulator from `xcrun simctl list devices available`. The **iPhone build and tests** GitHub Actions workflow selects one automatically, compiles the app, runs XCTest, captures the welcome screen and builds an unsigned physical-device IPA. Download **EInk-iPhone** from a successful run for the IPA, checksum and installation notes. The IPA needs signing before it can be installed; it is not a TestFlight build.
+Choose an installed simulator from `xcrun simctl list devices available`. The **iPhone build and tests** GitHub Actions workflow selects one automatically, compiles the app, runs XCTest, attempts an optional welcome-screen capture and independently builds an unsigned physical-device IPA. Download **EInk-iPhone** from a successful run for the IPA, checksum, signing entitlements and installation notes. The IPA needs signing before it can be installed; it is not a TestFlight build.
 
 Tests exercise mocked API responses, HTTPS/token boundaries, partial preference updates, JSON compatibility, preview identity/dimensions/encoding and both Bluetooth protocols. They do not sign in to production or contact real displays. The portable Python checks verify project/resource consistency only; compilation and XCTest run on macOS.
+
+Validated on 2 October 2026: [run 37014281433](https://github.com/scottlinddk/ESP32-e-ink-iOS/actions/runs/37014281433) passed **21 tests with zero failures**, the simulator build and the unsigned arm64 iPhone build. The IPA's SHA-256 checksum and iOS 17 minimum deployment target were verified after download. The optional final screenshot step timed out; an earlier build's welcome screen was captured and visually inspected. Native sign-in and Bluetooth on physical hardware remain unverified pending the setup and acceptance steps below.
 
 ## Hardware and compatibility
 
