@@ -1,6 +1,6 @@
 # Install E Ink on an iPhone
 
-The repository includes source and a macOS build workflow. A successful **iPhone build and tests** run produces **EInk-iPhone**, containing `EInk-unsigned.ipa` and its SHA-256 checksum. This is an unsigned app for a physical iPhone, not a simulator app and not directly installable.
+The repository includes source and a macOS build workflow. A successful **iPhone build and tests** run produces **EInk-iPhone**, containing `EInk-unsigned.ipa`, its SHA-256 checksum, and `EInk.entitlements` for the signing step. This is an unsigned app for a physical iPhone, not a simulator app and not directly installable.
 
 ## Configure the existing Clerk application
 
@@ -31,7 +31,7 @@ The checked-in simulator entitlement supports the Clerk Keychain without an Appl
 
 ## Install a CI-built IPA
 
-Download the **EInk-iPhone** artifact from a successful workflow run. Verify the SHA-256 checksum before signing. Re-sign the app with your own certificate and provisioning profile, preserving the bundle identifier, URL scheme and required entitlements, then install with your normal iOS distribution tooling. A free personal signing profile may not support Associated Domains; do not assume a generic re-signing tool will preserve Clerk's authentication capabilities.
+Download the **EInk-iPhone** artifact from a successful workflow run. Verify the SHA-256 checksum before signing. Re-sign the app with your own certificate and provisioning profile, applying the included `EInk.entitlements` plus your signing identity's normal application/Keychain entitlements. Preserve the bundle identifier and URL scheme, then install with your normal iOS distribution tooling. Unsigned apps do not carry signed entitlements. A free personal signing profile may not support Associated Domains; do not assume a generic re-signing tool will preserve Clerk's authentication capabilities.
 
 For TestFlight or App Store distribution, archive/sign using an Apple Developer Program team, register the app in App Store Connect, complete privacy/store metadata, and upload using Xcode or your existing release tooling. This repository does not include Apple credentials, provisioning profiles or a claimed App Store listing.
 

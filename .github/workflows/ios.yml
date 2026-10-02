@@ -3,6 +3,7 @@ name: iPhone build and tests
 on:
   push:
     branches: [main]
+    paths: ['EInk/**', 'EInk.xcodeproj/**', 'Config/**', 'Tests/**', 'scripts/**', '.github/workflows/ios.yml']
   pull_request:
   workflow_dispatch:
 
@@ -62,6 +63,7 @@ jobs:
           zip -qry EInk-unsigned.ipa Payload
           shasum -a 256 EInk-unsigned.ipa > SHA256SUMS.txt
           cp ../docs/INSTALL.md .
+          cp ../Config/EInk.entitlements .
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -79,3 +81,4 @@ jobs:
             package/EInk-unsigned.ipa
             package/SHA256SUMS.txt
             package/INSTALL.md
+            package/EInk.entitlements

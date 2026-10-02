@@ -43,7 +43,7 @@ struct WelcomeView: View {
                 .accessibilityLabel("Illustration of an e-ink home display")
                 VStack(alignment: .leading, spacing: 17) {
                     feature("Make it yours", "Choose your sources and arrange your display.", "square.grid.2x2")
-                    feature("Send it in a tap", "Update a nearby display over Bluetooth.", "radiowaves.left.and.right")
+                    feature("Send it in a tap", "Update a nearby display over Bluetooth.", "antenna.radiowaves.left.and.right")
                     feature("Keep the same account", "Your saved settings stay in sync with the web app.", "arrow.triangle.2.circlepath")
                 }
                 Button { showAuth = true } label: {

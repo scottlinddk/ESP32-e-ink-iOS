@@ -36,7 +36,7 @@ struct DashboardView: View {
                     }
                     VStack(spacing: 12) {
                         Button { showBluetooth = true } label: {
-                            Label("Send over Bluetooth", systemImage: "radiowaves.left.and.right")
+                            Label("Send over Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
                                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                         }.buttonStyle(.borderedProminent).controlSize(.large)
                             .disabled(loading || preview == nil)
@@ -164,7 +164,7 @@ struct BluetoothPushView: View {
         NavigationStack {
             List {
                 Section {
-                    Label(completed ? "Display updated" : "Send to a nearby display", systemImage: completed ? "checkmark.circle.fill" : "radiowaves.left.and.right")
+                    Label(completed ? "Display updated" : "Send to a nearby display", systemImage: completed ? "checkmark.circle.fill" : "antenna.radiowaves.left.and.right")
                         .font(.headline).foregroundStyle(completed ? InkTheme.accent : .primary)
                     Text("Turn on your display and keep this app open until its refresh is confirmed.")
                         .foregroundStyle(.secondary)
