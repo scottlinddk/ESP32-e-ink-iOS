@@ -44,13 +44,36 @@ jobs:
             -parallel-testing-enabled NO -derivedDataPath build \
             -resultBundlePath TestResults.xcresult | tee tests.log
       - name: Capture iPhone launch
+        timeout-minutes: 3
+        continue-on-error: true
         run: |
+          SIMULATOR_ID=$(xcrun simctl list devices available --json | python3 scripts/select_simulator.py --max-ios "$(xcrun --sdk iphonesimulator --show-sdk-version)" --prefer-booted --fallback-id "$SIMULATOR_ID" --id-only)
           xcrun simctl bootstatus "$SIMULATOR_ID" -b
           xcrun simctl install "$SIMULATOR_ID" build/Build/Products/Debug-iphonesimulator/EInk.app
           xcrun simctl status_bar "$SIMULATOR_ID" override --time '9:41' --batteryState charged --batteryLevel 100
           xcrun simctl launch --terminate-running-process "$SIMULATOR_ID" dk.scottlind.eink
           sleep 5
           xcrun simctl io "$SIMULATOR_ID" screenshot EInk-iPhone.png
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iPhone-validation
+          path: |
+            *.log
+            TestResults.xcresult
+            EInk-iPhone.png
+            EInk.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          if-no-files-found: ignore
+
+  device-package:
+    runs-on: macos-15
+    timeout-minutes: 25
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project
+        run: python3 scripts/validate_project.py
       - name: Build unsigned iPhone app
         run: |
           set -o pipefail
@@ -67,12 +90,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: iPhone-validation
-          path: |
-            *.log
-            TestResults.xcresult
-            EInk-iPhone.png
-            EInk.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          name: iPhone-package-log
+          path: device-build.log
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
