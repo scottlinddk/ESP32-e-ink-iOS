@@ -6,20 +6,23 @@ The repository includes source and a macOS build workflow. A successful **iPhone
 
 The app uses the same Clerk application as `esp32.scottlind.dk` and its public client key. Do not create a replacement Clerk app or change the web application's account data.
 
+On 2 October 2026, the public Clerk configuration reported **Native API disabled**. Native sign-in will not work until this is enabled. The implementation does not change these account settings automatically.
+
 Following [Clerk's iOS quickstart](https://clerk.com/docs/ios/getting-started/quickstart):
 
 1. In the existing application's **Native applications** settings, enable the Native API if needed.
 2. Register the iOS application using your Apple **App ID Prefix** and bundle identifier **`dk.scottlind.eink`**.
 3. Ensure the configured native OAuth redirect is **`dk.scottlind.eink://callback`**. The app's URL scheme follows its bundle identifier.
 4. Keep **`webcredentials:clerk.scottlind.dk`** in the app's Associated Domains capability. The corresponding Clerk domain must recognize the registered app.
-5. Confirm the existing Google/GitHub connections you want are enabled for this instance, then test the native flow.
+5. The current instance also enables Apple sign-in. Keep the included **Sign in with Apple** entitlement and enable that capability for the Apple App ID/provisioning profile. Complete Clerk's [native Apple configuration](https://clerk.com/docs/ios/guides/configure/auth-strategies/sign-in-with-apple) for that App ID.
+6. Confirm the existing Google/GitHub connections you want are enabled for this instance, then test the native flow.
 
 The repository cannot infer your Apple App ID Prefix or provision a signing identity. These account settings must match the app you sign. If you change the bundle identifier, register that identifier with Clerk too. Native OAuth is handled by Clerk and the system authentication browser, never a web view collecting passwords.
 
 ## Run from Xcode
 
 1. Install Xcode 26.3 or newer on a compatible Mac, then open `EInk.xcodeproj`.
-2. Under **Signing & Capabilities**, choose your Apple development team. Use a provisioning profile that supports Associated Domains.
+2. Under **Signing & Capabilities**, choose your Apple development team. Use a provisioning profile that supports Associated Domains and Sign in with Apple.
 3. Connect and trust your iPhone; enable Developer Mode if iOS prompts for it.
 4. Select your iPhone and press Run.
 5. Sign in, allow Bluetooth when asked, and choose a nearby powered-on display.

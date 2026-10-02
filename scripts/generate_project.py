@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Generate a stable, dependency-free Xcode project. Run after adding Swift files.
 
-The checked-in project opens directly in Xcode. project.yml is an alternative
-for developers who prefer XcodeGen; this generator needs only Python 3.
+The checked-in project opens directly in Xcode. This generator needs only Python 3.
 """
 from __future__ import annotations
 

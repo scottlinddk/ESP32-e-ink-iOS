@@ -23,6 +23,8 @@ There is no demo backend or invented live data. Failed network requests and unco
 
 The public Clerk client key is already configured from the deployed website. No secret key belongs in the app. To target another deployment, update `EInkServerURL`, `ClerkPublishableKey`, and the associated domain in `Config/`; use that deployment's native app registration.
 
+**Sign-in setup remains required:** the existing Clerk instance reported Native API disabled on 2 October 2026. Enable it and register your Apple App ID Prefix + `dk.scottlind.eink` before using native sign-in. These account settings and iPhone signing cannot be validated by simulator tests.
+
 ## Build and tests
 
 The checked-in project opens directly; no project generator installation is needed. After adding/removing files, regenerate it with Python:

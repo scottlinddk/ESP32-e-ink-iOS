@@ -1,4 +1,7 @@
 build/
+device-build/
+package/
+*.log
 DerivedData/
 *.xcuserstate
 xcuserdata/

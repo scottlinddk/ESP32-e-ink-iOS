@@ -2,6 +2,14 @@ import Foundation
 
 final class APIClient {
     private let baseURL: URL
+    var provisioningURL: URL {
+        var components = URLComponents()
+        components.scheme = baseURL.scheme
+        components.host = baseURL.host
+        components.port = baseURL.port
+        components.path = "/api"
+        return components.url ?? baseURL
+    }
     private let tokenProvider: () async throws -> String
     private let session: URLSession
 

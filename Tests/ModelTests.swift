@@ -30,4 +30,15 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(preferences["count"]?.intValue, 1)
         XCTAssertNil(JSONValue.number(.infinity).intValue)
     }
+
+    func testLayoutAcceptsAdjacentWidgetsAndRejectsOverlapOrOverflow() {
+        func widget(_ id: String, x: Int, width: Int) -> JSONValue {
+            .object(["i": .string(id), "x": .number(Double(x)), "y": .number(0),
+                     "w": .number(Double(width)), "h": .number(2)])
+        }
+        XCTAssertNil(layoutValidationError([widget("energy", x: 0, width: 5), widget("weather", x: 5, width: 5)]))
+        XCTAssertNotNil(layoutValidationError([widget("energy", x: 0, width: 6), widget("weather", x: 5, width: 5)]))
+        XCTAssertNotNil(layoutValidationError([widget("energy", x: 9, width: 2)]))
+        XCTAssertNotNil(layoutValidationError([widget("energy", x: 0, width: 5), widget("energy", x: 5, width: 5)]))
+    }
 }

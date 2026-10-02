@@ -22,10 +22,10 @@ final class APIClientTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PUT")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-token")
             let body = try JSONDecoder().decode(Preferences.self, from: Self.body(of: request))
-            XCTAssertEqual(body, ["show_weather": .bool(false)])
-            return self.response(request, json: #"{"preferences":{"show_weather":false,"unrelated":{"enabled":true}},"inherited":false}"#)
+            XCTAssertEqual(body, ["display_timezone": .string("Europe/Copenhagen")])
+            return self.response(request, json: #"{"preferences":{"display_timezone":"Europe/Copenhagen","unrelated":{"enabled":true}},"inherited":false}"#)
         }
-        let result = try await client().savePreferences(["show_weather": .bool(false)], deviceID: deviceID)
+        let result = try await client().savePreferences(["display_timezone": .string("Europe/Copenhagen")], deviceID: deviceID)
         XCTAssertEqual(result.preferences["unrelated"], .object(["enabled": .bool(true)]))
         XCTAssertEqual(result.inherited, false)
     }
@@ -69,6 +69,51 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(frame.profile.byteLength, frame.pixels.count)
         XCTAssertEqual(frame.metadata.deviceId, deviceID)
         XCTAssertEqual(frame.metadata.layoutName, "Kitchen display")
+    }
+
+    func testProvisioningURLNormalizesSupportedAPIOrigins() {
+        for path in ["", "/", "/api", "/api/"] {
+            let api = APIClient(baseURL: URL(string: "https://example.invalid:8443\(path)")!) { "token" }
+            XCTAssertEqual(api.provisioningURL.absoluteString, "https://example.invalid:8443/api")
+        }
+    }
+
+    func testBMPPreviewAcceptsServerFormatAndRejectsMismatchOrTruncation() async throws {
+        // Same 1-bit top-down DIB/palette format as backend bmpGenerator.ts.
+        var valid = Data(repeating: 0, count: 62 + 8 * 64)
+        func write32(_ offset: Int, _ value: UInt32) {
+            for index in 0..<4 { valid[offset + index] = UInt8(truncatingIfNeeded: value >> (8 * index)) }
+        }
+        valid[0] = 0x42; valid[1] = 0x4d
+        write32(2, UInt32(valid.count)); write32(10, 62); write32(14, 40)
+        write32(18, 64); write32(22, UInt32(bitPattern: -64))
+        valid[26] = 1; valid[28] = 1
+        write32(38, 2835); write32(42, 2835); write32(46, 2); write32(50, 2)
+        valid[58] = 255; valid[59] = 255; valid[60] = 255
+        for index in 62..<valid.count { valid[index] = 255 }
+
+        for mutation in 0..<3 {
+            APIStubProtocol.handler = { request in
+                XCTAssertEqual(request.url?.path, "/api/image/preview")
+                var headers = self.previewHeaders(device: self.deviceID)
+                headers["Content-Type"] = "image/bmp"
+                headers["X-Display-Width"] = "64"
+                headers["X-Display-Height"] = "64"
+                headers["X-Display-Row-Bytes"] = "8"
+                var bytes = valid
+                if mutation == 1 { bytes[18] = 65 }
+                if mutation == 2 { bytes.removeLast() }
+                return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headers)!, bytes)
+            }
+            do {
+                let image = try await client().previewBMP(deviceID: deviceID)
+                XCTAssertEqual(mutation, 0, "Accepted invalid BMP variant \(mutation)")
+                XCTAssertEqual(image.data, valid)
+                XCTAssertEqual(image.metadata.profile, DisplayProfile(width: 64, height: 64))
+            } catch is APIError {
+                XCTAssertNotEqual(mutation, 0, "Rejected a valid backend BMP")
+            }
+        }
     }
 
     func testRawPreviewRejectsWrongDeviceTruncationAndEncoding() async throws {

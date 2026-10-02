@@ -6,6 +6,7 @@ struct DevicesView: View {
     @State private var loading = true
     @State private var error: String?
     @State private var adding = false
+    @State private var loadID = UUID()
 
     var body: some View {
         List {
@@ -61,12 +62,18 @@ struct DevicesView: View {
     }
 
     @MainActor private func load() async {
+        let requestID = UUID()
+        loadID = requestID
         loading = true
-        defer { loading = false }
+        defer { if loadID == requestID { loading = false } }
         do {
-            devices = try await api.devices()
+            let result = try await api.devices()
+            guard loadID == requestID, !Task.isCancelled else { return }
+            devices = result
             error = nil
-        } catch { self.error = error.localizedDescription }
+        } catch {
+            if loadID == requestID && !Task.isCancelled { self.error = error.localizedDescription }
+        }
     }
 }
 
@@ -148,6 +155,13 @@ private struct DeviceDetailView: View {
                 }
             }
             Section {
+                ProvisioningFields(deviceID: device.id, apiURL: api.provisioningURL.absoluteString)
+            } header: {
+                Text("Firmware setup")
+            } footer: {
+                Text("Enter this UUID, API base URL, and a delivery token in the display’s setup hotspot. The hardware name above is separate from the UUID required by firmware.")
+            }
+            Section {
                 if let status {
                     LabeledContent("Delivery", value: status.configured ? "Token configured" : "Not configured")
                     LabeledContent("Last check-in", value: displayDate(status.lastSeenAt))
@@ -226,7 +240,7 @@ private struct DeviceDetailView: View {
             Text("The display will no longer be able to retrieve new screens over Wi-Fi.")
         }
         .sheet(item: $token, onDismiss: { token = nil }) { item in
-            DeliveryTokenView(token: item.token)
+            DeliveryTokenView(deviceID: device.id, apiURL: api.provisioningURL.absoluteString, token: item.token)
         }
     }
 
@@ -300,10 +314,16 @@ private struct DeliveryToken: Identifiable {
 }
 
 private struct DeliveryTokenView: View {
+    let deviceID: String
+    let apiURL: String
     let token: String
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var revealed = false
+
+    private var setupText: String {
+        "EInk display setup\nAPI base URL: \(apiURL)\nDevice UUID: \(deviceID)\nDevice token: \(token)"
+    }
 
     var body: some View {
         NavigationStack {
@@ -312,6 +332,9 @@ private struct DeliveryTokenView: View {
                     Label("Keep this token private", systemImage: "lock.shield")
                     Text("The token grants this display access to its screen content. It will not be available again after you close this sheet.")
                 }
+                Section("Firmware setup") {
+                    ProvisioningFields(deviceID: deviceID, apiURL: apiURL)
+                }
                 Section {
                     if revealed && scenePhase == .active {
                         Text(token).font(.footnote.monospaced()).textSelection(.enabled).privacySensitive()
@@ -319,13 +342,33 @@ private struct DeliveryTokenView: View {
                         Text("••••••••••••••••••••••••").font(.body.monospaced())
                     }
                     Button(revealed ? "Hide token" : "Reveal token") { revealed.toggle() }
-                    ShareLink(item: token) { Label("Share token securely", systemImage: "square.and.arrow.up") }
+                    ShareLink(item: setupText) { Label("Share setup details and token", systemImage: "square.and.arrow.up") }
+                } header: {
+                    Text("Device token")
+                } footer: {
+                    Text("Sharing includes the full token, UUID, and API base URL. Use a private destination for your device setup.")
                 }
             }
             .navigationTitle("Delivery token")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .onChange(of: scenePhase) { _, phase in if phase != .active { revealed = false } }
+        }
+    }
+}
+
+private struct ProvisioningFields: View {
+    let deviceID: String
+    let apiURL: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Device UUID").font(.caption).foregroundStyle(.secondary)
+            Text(deviceID).font(.footnote.monospaced()).textSelection(.enabled)
+        }
+        VStack(alignment: .leading, spacing: 5) {
+            Text("API base URL").font(.caption).foregroundStyle(.secondary)
+            Text(apiURL).font(.footnote.monospaced()).textSelection(.enabled)
         }
     }
 }
