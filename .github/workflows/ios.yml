@@ -1,0 +1,81 @@
+name: iPhone build and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 35
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project
+        run: python3 scripts/validate_project.py
+      - name: Select iPhone
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available --json | python3 scripts/select_simulator.py --max-ios "$(xcrun --sdk iphonesimulator --show-sdk-version)" >> "$GITHUB_ENV"
+      - name: Resolve pinned authentication SDK
+        run: xcodebuild -resolvePackageDependencies -project EInk.xcodeproj -scheme EInk
+      - name: Build app and tests
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing -project EInk.xcodeproj -scheme EInk \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -derivedDataPath build | tee build.log
+      - name: Run protocol and API tests
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building -project EInk.xcodeproj -scheme EInk \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -parallel-testing-enabled NO -derivedDataPath build \
+            -resultBundlePath TestResults.xcresult | tee tests.log
+      - name: Capture iPhone launch
+        run: |
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
+          xcrun simctl install "$SIMULATOR_ID" build/Build/Products/Debug-iphonesimulator/EInk.app
+          xcrun simctl status_bar "$SIMULATOR_ID" override --time '9:41' --batteryState charged --batteryLevel 100
+          xcrun simctl launch --terminate-running-process "$SIMULATOR_ID" dk.scottlind.eink
+          sleep 5
+          xcrun simctl io "$SIMULATOR_ID" screenshot EInk-iPhone.png
+      - name: Build unsigned iPhone app
+        run: |
+          set -o pipefail
+          xcodebuild build -project EInk.xcodeproj -scheme EInk -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath device-build \
+            CODE_SIGNING_ALLOWED=NO | tee device-build.log
+          mkdir -p package/Payload
+          cp -R device-build/Build/Products/Release-iphoneos/EInk.app package/Payload/
+          cd package
+          zip -qry EInk-unsigned.ipa Payload
+          shasum -a 256 EInk-unsigned.ipa > SHA256SUMS.txt
+          cp ../docs/INSTALL.md .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iPhone-validation
+          path: |
+            *.log
+            TestResults.xcresult
+            EInk-iPhone.png
+            EInk.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EInk-iPhone
+          path: |
+            package/EInk-unsigned.ipa
+            package/SHA256SUMS.txt
+            package/INSTALL.md

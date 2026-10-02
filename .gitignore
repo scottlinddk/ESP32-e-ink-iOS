@@ -1,0 +1,9 @@
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcresult/
+*.ipa
+.DS_Store
+__pycache__/
+Config/Local.xcconfig
