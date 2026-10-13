@@ -36,6 +36,8 @@ xcodebuild test -project EInk.xcodeproj -scheme EInk \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
+`EInk.xcodeproj` (project, shared scheme, workspace) is generated, so make project-setting changes (signing team, version, build number) in `scripts/generate_project.py`, not in Xcode. Xcode rewrites these files in its own format when it saves, and `validate_project.py` fails on the result; run `python3 scripts/generate_project.py` to restore them. Xcode may also reformat `Config/Info.plist`; discard that with `git checkout -- Config/Info.plist`. The TestFlight build uses marketing version 1.0.1, build 2 and team `3E935478GG`; increment `CURRENT_PROJECT_VERSION` there for each upload.
+
 Choose an installed simulator from `xcrun simctl list devices available`. The **iPhone build and tests** GitHub Actions workflow selects one automatically, compiles the app, runs XCTest, attempts an optional welcome-screen capture and independently builds an unsigned physical-device IPA. Download **EInk-iPhone** from a successful run for the IPA, checksum, signing entitlements and installation notes. The IPA needs signing before it can be installed; it is not a TestFlight build.
 
 Tests exercise mocked API responses, HTTPS/token boundaries, partial preference updates, JSON compatibility, preview identity/dimensions/encoding and both Bluetooth protocols. They do not sign in to production or contact real displays. The portable Python checks verify project/resource consistency only; compilation and XCTest run on macOS.

@@ -435,6 +435,9 @@
 				"SUPPORTS_MACCATALYST" = "NO";
 				"SWIFT_EMIT_LOC_STRINGS" = "YES";
 				"TARGETED_DEVICE_FAMILY" = "1";
+				"DEVELOPMENT_TEAM" = "3E935478GG";
+				"MARKETING_VERSION" = "1.0.1";
+				"CURRENT_PROJECT_VERSION" = "2";
 			};
 			"name" = "Debug";
 		};
@@ -457,6 +460,9 @@
 				"SUPPORTS_MACCATALYST" = "NO";
 				"SWIFT_EMIT_LOC_STRINGS" = "YES";
 				"TARGETED_DEVICE_FAMILY" = "1";
+				"DEVELOPMENT_TEAM" = "3E935478GG";
+				"MARKETING_VERSION" = "1.0.1";
+				"CURRENT_PROJECT_VERSION" = "2";
 			};
 			"name" = "Release";
 		};
@@ -484,6 +490,7 @@
 				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 				"TARGETED_DEVICE_FAMILY" = "1";
 				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/EInk.app/EInk";
+				"DEVELOPMENT_TEAM" = "3E935478GG";
 			};
 			"name" = "Debug";
 		};
@@ -502,6 +509,7 @@
 				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 				"TARGETED_DEVICE_FAMILY" = "1";
 				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/EInk.app/EInk";
+				"DEVELOPMENT_TEAM" = "3E935478GG";
 			};
 			"name" = "Release";
 		};

@@ -110,13 +110,14 @@ def generate() -> dict[Path, str]:
         "PRODUCT_BUNDLE_IDENTIFIER": "dk.scottlind.eink", "PRODUCT_NAME": "$(TARGET_NAME)",
         "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator", "SUPPORTS_MACCATALYST": "NO",
         "SWIFT_EMIT_LOC_STRINGS": "YES", "TARGETED_DEVICE_FAMILY": "1",
+        "DEVELOPMENT_TEAM": "3E935478GG", "MARKETING_VERSION": "1.0.1", "CURRENT_PROJECT_VERSION": "2",
     })
     test_configs = configuration_list("tests", {
         "BUNDLE_LOADER": "$(TEST_HOST)", "GENERATE_INFOPLIST_FILE": "YES",
         "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks"],
         "PRODUCT_BUNDLE_IDENTIFIER": "dk.scottlind.eink.tests", "PRODUCT_NAME": "$(TARGET_NAME)",
         "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator", "TARGETED_DEVICE_FAMILY": "1",
-        "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/EInk.app/EInk",
+        "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/EInk.app/EInk", "DEVELOPMENT_TEAM": "3E935478GG",
     })
     proxy = add("proxy:app", "PBXContainerItemProxy", containerPortal=project_id, proxyType=1, remoteGlobalIDString=app_id, remoteInfo="EInk")
     dependency = add("dependency:app", "PBXTargetDependency", target=app_id, targetProxy=proxy)
